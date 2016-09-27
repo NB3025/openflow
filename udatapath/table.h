@@ -76,8 +76,7 @@ struct sw_table {
     /* Searches 'table' for a flow matching 'key', which must not have any
      * wildcard fields.  Returns the flow if successful, a null pointer
      * otherwise. */
-    struct sw_flow *(*lookup)(struct sw_table *table,
-                              const struct sw_flow_key *key);
+    struct sw_flow *(*lookup)(struct sw_table *table, const struct sw_flow_key *key);
 
     /* Inserts 'flow' into 'table', replacing any duplicate flow.  Returns
      * 0 if successful or a negative error.  Error can be due to an
@@ -86,7 +85,14 @@ struct sw_table {
      *
      * If successful, 'flow' becomes owned by 'table', otherwise it is
      * retained by the caller. */
-    int (*insert)(struct sw_table *table, struct sw_flow *flow);
+	int (*insert)(struct sw_table *table, struct sw_flow *flow);
+
+	int (*hash_insert)(struct sw_table *swt, struct sw_flow *flow);
+	int (*index_insert)(struct sw_table *swt, const struct sw_flow_key *key, struct sw_flow *flow);
+	//int (*hash_insert)(struct sw_table *table,  struct sw_flow_key *key, uint64_t *index);
+
+	int (*linear_insert)(struct sw_table *swt, struct sw_flow *flow);
+	//uint64_t *(*linear_insert)(struct sw_table *table, struct sw_flow *flow);
 
     /* Modifies the actions in 'table' that match 'key'.  If 'strict'
      * set, wildcards and priority must match.  Returns the number of flows

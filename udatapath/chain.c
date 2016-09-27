@@ -82,9 +82,7 @@ struct sw_chain *chain_create(struct datapath *dp)
         }
     }
 #endif
-    if (add_table(chain, table_hash2_create(0x1EDC6F41, TABLE_HASH_MAX_FLOWS,
-                                            0x741B8CD7, TABLE_HASH_MAX_FLOWS),
-                                            0)
+    if (add_table(chain, table_hash_create(0x1EDC6F41, TABLE_HASH_MAX_FLOWS), 0)
         || add_table(chain, table_linear_create(TABLE_LINEAR_MAX_FLOWS), 0)
         || add_table(chain, table_linear_create(TABLE_LINEAR_MAX_FLOWS), 1)) {
         chain_destroy(chain);
@@ -100,7 +98,6 @@ struct sw_flow *
 chain_lookup(struct sw_chain *chain, const struct sw_flow_key *key, int emerg)
 {
     int i;
-
     assert(!key->wildcards);
 
     if (emerg) {
@@ -112,20 +109,25 @@ chain_lookup(struct sw_chain *chain, const struct sw_flow_key *key, int emerg)
             return flow;
         }
     } else {
-        for (i = 0; i < chain->n_tables; i++) {
-            struct sw_table *t = chain->tables[i];
-            struct sw_flow *flow = t->lookup(t, key);
-            t->n_lookup++;
-            if (flow) {
-                t->n_matched++;
-                return flow;
-            }
-        }
-    }
 
+		struct sw_table *th = chain->tables[0];
+		struct sw_table *tl = chain->tables[1];
+		struct sw_flow *flow = th->lookup(th,key);
+		if(flow){
+			return flow;
+		}
+		else{
+			flow = tl->lookup(tl,key);
+			if(flow){
+				th->index_insert(th,key,flow);
+				return flow;
+			}
+			return NULL;
+		}
+	}
+    printf("NULL\n");
     return NULL;
 }
-
 /* Inserts 'flow' into 'chain', replacing any duplicate flow.  Returns 0 if
  * successful or a negative error.
  *
@@ -135,17 +137,22 @@ int
 chain_insert(struct sw_chain *chain, struct sw_flow *flow, int emerg)
 {
     int i;
-
     if (emerg) {
         struct sw_table *t = chain->emerg_table;
         if (t->insert(t, flow))
             return 0;
     } else {
-        for (i = 0; i < chain->n_tables; i++) {
-            struct sw_table *t = chain->tables[i];
-            if (t->insert(t, flow))
-                return 0;
-        }
+		//struct sw_table *th = chain->tables[0];
+		struct sw_table *tl = chain->tables[1];
+		
+		if(tl->linear_insert(tl,flow)){
+			/****printf("[nb]udatapath/chain.c/chain_insert/if(1)\n");
+			if(th->hash_insert(th,flow)){
+				printf("[nb]udatapath/chain.c/chain_insert/if(2)\n");
+				return 0;
+			}*/
+			return 0;
+		}
     }
 
     return -ENOBUFS;
@@ -165,7 +172,6 @@ chain_modify(struct sw_chain *chain, const struct sw_flow_key *key,
 {
     int count = 0;
     int i;
-
     if (emerg) {
         struct sw_table *t = chain->emerg_table;
         count += t->modify(t, key, priority, strict, actions, actions_len);
@@ -189,7 +195,6 @@ chain_has_conflict(struct sw_chain *chain, const struct sw_flow_key *key,
                    uint16_t priority, int strict)
 {
     int i;
-
     for (i = 0; i < chain->n_tables; i++) {
         struct sw_table *t = chain->tables[i];
         if (t->has_conflict(t, key, priority, strict)) {
@@ -214,7 +219,6 @@ chain_delete(struct sw_chain *chain, const struct sw_flow_key *key,
 {
     int count = 0;
     int i;
-
     if (emerg) {
         struct sw_table *t = chain->emerg_table;
         count += t->delete(chain->dp, t, key, out_port, priority, strict);
@@ -237,7 +241,6 @@ void
 chain_timeout(struct sw_chain *chain, struct list *deleted)
 {
     int i;
-
     for (i = 0; i < chain->n_tables; i++) {
         struct sw_table *t = chain->tables[i];
         t->timeout(t, deleted);
@@ -250,7 +253,6 @@ chain_destroy(struct sw_chain *chain)
 {
     int i;
     struct sw_table *t;
-
     for (i = 0; i < chain->n_tables; i++) {
         t = chain->tables[i];
         t->destroy(t);

@@ -47,6 +47,7 @@ new_queue(struct sw_port * port, struct sw_queue * queue,
           struct ofp_queue_prop_min_rate * mr)
 {
     memset(queue, '\0', sizeof *queue);
+	printf("[nb]udatapath/of_ext_msg.c/new_queue\n");
     queue->port = port;
     queue->queue_id = queue_id;
     /* class_id is the internal mapping to class. It is the offset
@@ -68,6 +69,7 @@ port_add_queue(struct sw_port *p, uint32_t queue_id,
                struct ofp_queue_prop_min_rate * mr)
 {
     int queue_no;
+	printf("[nb]udatapath/of_ext_msg.c/port_add_queue\n");
     for (queue_no = 1; queue_no < p->num_queues; queue_no++) {
         struct sw_queue *q = &p->queues[queue_no];
         if (!q->port) {

@@ -76,7 +76,9 @@ protection_callback(struct sw_flow *flow, void *private_)
 
 	/* Dup w/o idle and hard timeout. */
 	memset(&match, 0, sizeof(match));
+	printf("[nb]udatapath/private-msg/protection_callback/flow->key.wildcards=%d\n",flow->key.wildcards);
 	flow_fill_match(&match, &flow->key.flow, flow->key.wildcards);
+	printf("[nb]udatapath/private-msg/protection_callback/flow->key.wildcards=%d\n",flow->key.wildcards);
 	flow_extract_match(&tgtflow->key, &match);
 	/* Fill out flow. */
 	tgtflow->priority = flow->priority;

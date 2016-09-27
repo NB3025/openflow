@@ -169,7 +169,6 @@ static void
 add_ports(struct datapath *dp, char *port_list)
 {
     char *port, *save_ptr;
-
     /* Glibc 2.7 has a bug in strtok_r when compiling with optimization that
      * can cause segfaults here:
      * http://sources.redhat.com/bugzilla/show_bug.cgi?id=5614.
@@ -219,7 +218,6 @@ parse_options(int argc, char *argv[])
         {0, 0, 0, 0},
     };
     char *short_options = long_options_to_short_options(long_options);
-
     for (;;) {
         int indexptr;
         int c;

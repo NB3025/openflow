@@ -63,16 +63,26 @@ static struct sw_flow *table_linear_lookup(struct sw_table *swt,
     return NULL;
 }
 
-static int table_linear_insert(struct sw_table *swt, struct sw_flow *flow)
+
+static struct sw_flow *table_linear_index_lookup(struct sw_table *swt, const struct sw_flow_key *key, uint64_t *index){
+	struct sw_flow *flow;
+	uint64_t *add = index;
+	flow = (struct sw_flow *)add;
+	if(flow_matches_1wild(key,&flow->key))
+		return flow;
+    
+    return NULL;
+}
+
+
+static int *table_linear_index_insert(struct sw_table *swt, struct sw_flow *flow)
 {
     struct sw_table_linear *tl = (struct sw_table_linear *) swt;
     struct sw_flow *f;
+	uint64_t *index;
+	uint64_t t_index;
+	LIST_FOR_EACH (f, struct sw_flow, node, &tl->flows) {
 
-    /* Loop through the existing list of entries.  New entries will
-     * always be placed behind those with equal priority.  Just replace 
-     * any flows that match exactly.
-     */
-    LIST_FOR_EACH (f, struct sw_flow, node, &tl->flows) {
         if (f->priority == flow->priority
                 && f->key.wildcards == flow->key.wildcards
                 && flow_matches_2wild(&f->key, &flow->key)) {
@@ -82,7 +92,6 @@ static int table_linear_insert(struct sw_table *swt, struct sw_flow *flow)
             flow_free(f);
             return 1;
         }
-
         if (f->priority < flow->priority)
             break;
     }
@@ -92,14 +101,14 @@ static int table_linear_insert(struct sw_table *swt, struct sw_flow *flow)
         return 0;
     }
     tl->n_flows++;
-
     /* Insert the entry immediately in front of where we're pointing. */
     flow->serial = tl->next_serial++;
     list_insert(&f->node, &flow->node);
     list_push_front(&tl->iter_flows, &flow->iter_node);
-
     return 1;
+    
 }
+
 
 static int table_linear_modify(struct sw_table *swt,
                 const struct sw_flow_key *key, uint16_t priority, int strict,
@@ -108,7 +117,6 @@ static int table_linear_modify(struct sw_table *swt,
     struct sw_table_linear *tl = (struct sw_table_linear *) swt;
     struct sw_flow *flow;
     unsigned int count = 0;
-
     LIST_FOR_EACH (flow, struct sw_flow, node, &tl->flows) {
         if (flow_matches_desc(&flow->key, key, strict)
                 && (!strict || (flow->priority == priority))) {
@@ -125,7 +133,6 @@ static int table_linear_has_conflict(struct sw_table *swt,
 {
     struct sw_table_linear *tl = (struct sw_table_linear *) swt;
     struct sw_flow *flow;
-
     LIST_FOR_EACH (flow, struct sw_flow, node, &tl->flows) {
         if (flow_matches_2desc(&flow->key, key, strict)
                 && (flow->priority == priority)) {
@@ -243,7 +250,8 @@ struct sw_table *table_linear_create(unsigned int max_flows)
 
     swt = &tl->swt;
     swt->lookup = table_linear_lookup;
-    swt->insert = table_linear_insert;
+    //swt->insert = table_linear_insert;
+	swt->linear_insert = table_linear_index_insert;
     swt->modify = table_linear_modify;
     swt->has_conflict = table_linear_has_conflict;
     swt->delete = table_linear_delete;
