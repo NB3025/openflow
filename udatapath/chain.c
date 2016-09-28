@@ -113,12 +113,16 @@ chain_lookup(struct sw_chain *chain, const struct sw_flow_key *key, int emerg)
 		struct sw_table *th = chain->tables[0];
 		struct sw_table *tl = chain->tables[1];
 		struct sw_flow *flow = th->lookup(th,key);
+		th->n_lookup++;
 		if(flow){
+						th->n_matched++;
 			return flow;
 		}
 		else{
+						tl->n_lookup++;
 			flow = tl->lookup(tl,key);
 			if(flow){
+							tl->n_matched++;
 				th->index_insert(th,key,flow);
 				return flow;
 			}
