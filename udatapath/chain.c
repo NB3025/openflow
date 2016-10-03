@@ -112,9 +112,12 @@ chain_lookup(struct sw_chain *chain, const struct sw_flow_key *key, int emerg)
 
 		struct sw_table *th = chain->tables[0];
 		struct sw_table *tl = chain->tables[1];
+		printf("aaaa\n");
 		struct sw_flow *flow = th->lookup(th,key);
 		th->n_lookup++;
+		printf("1\n");
 		if(flow){
+						printf("Search in Hash %d\n", key->flow.tp_src);
 						th->n_matched++;
 			return flow;
 		}
@@ -122,6 +125,7 @@ chain_lookup(struct sw_chain *chain, const struct sw_flow_key *key, int emerg)
 						tl->n_lookup++;
 			flow = tl->lookup(tl,key);
 			if(flow){
+						printf("Search in Wild %d\n", key->flow.tp_src);
 							tl->n_matched++;
 				th->index_insert(th,key,flow);
 				return flow;
