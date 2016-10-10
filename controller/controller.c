@@ -73,7 +73,7 @@ static bool learn_macs = true;
 static bool setup_flows = true;
 
 /* --max-idle: Maximum idle time, in seconds, before flows expire. */
-static int max_idle = 60;
+static int max_idle = 9999;
 
 static int do_switching(struct switch_ *);
 static void new_switch(struct switch_ *, struct vconn *, const char *name);

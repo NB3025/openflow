@@ -82,8 +82,8 @@ struct sw_chain *chain_create(struct datapath *dp)
         }
     }
 #endif
-    if (add_table(chain, table_hash2_create(0x1EDC6F41, TABLE_HASH_MAX_FLOWS,
-                                            0x741B8CD7, TABLE_HASH_MAX_FLOWS),
+    if (add_table(chain, table_hash_create(0x1EDC6F41, TABLE_HASH_MAX_FLOWS
+                                            ),
                                             0)
         || add_table(chain, table_linear_create(TABLE_LINEAR_MAX_FLOWS), 0)
         || add_table(chain, table_linear_create(TABLE_LINEAR_MAX_FLOWS), 1)) {
@@ -117,8 +117,11 @@ chain_lookup(struct sw_chain *chain, const struct sw_flow_key *key, int emerg)
             struct sw_flow *flow = t->lookup(t, key);
             t->n_lookup++;
             if (flow) {
-                t->n_matched++;
-                return flow;
+										t->n_matched++; 
+										if(i == 1){
+													return NULL;
+										}
+										return flow;
             }
         }
     }
