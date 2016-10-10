@@ -44,7 +44,7 @@ struct list;
 struct datapath;
 
 #define TABLE_LINEAR_MAX_FLOWS  10000
-#define TABLE_HASH_MAX_FLOWS   32 
+#define TABLE_HASH_MAX_FLOWS   1024 
 #define TABLE_MAC_MAX_FLOWS      1024
 #define TABLE_MAC_NUM_BUCKETS   1024
 
