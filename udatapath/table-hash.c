@@ -77,11 +77,26 @@ static struct sw_flow *table_hash_lookup(struct sw_table *swt,
 static int table_hash_insert(struct sw_table *swt, struct sw_flow *flow){
 	struct sw_table_hash *th = (struct sw_table_hash *)swt;
 	struct sw_flow **bucket;
+	int retval;
+
+	if(flow->key.wildcards !=0)
+					return 0;
+
 	bucket = find_bucket(swt, &flow->key);
-	th->n_flows++;
-	*bucket = flow;
-	return 1;
+	if(*bucket == NULL){
+					th->n_flows++;
+					*bucket = flow;
+					retval = 1;
+	}
+	else{
+					struct sw_flow *old_flow = *bucket;
+					*bucket = flow;
+					flow_free(old_flow);
+					retval = 1;
+	}
+	return retval;
 }
+
 static int table_hash_index_insert(struct sw_table *swt, const struct sw_flow_key *key, struct sw_flow *flow){
 	struct sw_table_hash *th = (struct sw_table_hash *)swt;
 	struct sw_flow **bucket;
@@ -297,7 +312,7 @@ struct sw_table *table_hash_create(unsigned int polynomial,
 
     swt = &th->swt;
     swt->lookup = table_hash_lookup;
-	swt->hash_insert = table_hash_insert;
+		swt->insert = table_hash_insert;
 	swt->index_insert = table_hash_index_insert;
     swt->modify = table_hash_modify;
     swt->has_conflict = table_hash_has_conflict;

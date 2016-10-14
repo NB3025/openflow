@@ -89,10 +89,7 @@ struct sw_table {
 
 	int (*hash_insert)(struct sw_table *swt, struct sw_flow *flow);
 	int (*index_insert)(struct sw_table *swt, const struct sw_flow_key *key, struct sw_flow *flow);
-	//int (*hash_insert)(struct sw_table *table,  struct sw_flow_key *key, uint64_t *index);
 
-	int (*linear_insert)(struct sw_table *swt, struct sw_flow *flow);
-	//uint64_t *(*linear_insert)(struct sw_table *table, struct sw_flow *flow);
 
     /* Modifies the actions in 'table' that match 'key'.  If 'strict'
      * set, wildcards and priority must match.  Returns the number of flows

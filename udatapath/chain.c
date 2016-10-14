@@ -145,18 +145,13 @@ chain_insert(struct sw_chain *chain, struct sw_flow *flow, int emerg)
         if (t->insert(t, flow))
             return 0;
     } else {
-		//struct sw_table *th = chain->tables[0];
-		struct sw_table *tl = chain->tables[1];
-		
-		if(tl->linear_insert(tl,flow)){
-			/****printf("[nb]udatapath/chain.c/chain_insert/if(1)\n");
-			if(th->hash_insert(th,flow)){
-				printf("[nb]udatapath/chain.c/chain_insert/if(2)\n");
-				return 0;
-			}*/
-			return 0;
-		}
-    }
+						for(i=0;i<chain->n_tables;i++){
+				struct sw_table *t = chain->tables[i];
+			 	if(t->insert(t,flow))
+											return 0;
+				}
+						
+		}	
 
     return -ENOBUFS;
 }
