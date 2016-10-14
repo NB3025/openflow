@@ -84,7 +84,7 @@ struct sw_chain *chain_create(struct datapath *dp)
 #endif
     if (add_table(chain, table_hash_create(0x1EDC6F41, TABLE_HASH_MAX_FLOWS), 0)
         || add_table(chain, table_linear_create(TABLE_LINEAR_MAX_FLOWS), 0)
-        || add_table(chain, table_linear_create(TABLE_LINEAR_MAX_FLOWS), 1)) {
+        ) {
         chain_destroy(chain);
         return NULL;
     }

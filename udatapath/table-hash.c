@@ -100,11 +100,12 @@ static int table_hash_insert(struct sw_table *swt, struct sw_flow *flow){
 static int table_hash_index_insert(struct sw_table *swt, const struct sw_flow_key *key, struct sw_flow *flow){
 	struct sw_table_hash *th = (struct sw_table_hash *)swt;
 	struct sw_flow **bucket;
-	bucket = find_bucket(swt, key);
+	int retval;
+	bucket = find_bucket(swt, &flow->key);
 	th->n_flows++;
 	*bucket = flow;
-
-	return 1;
+	retval = 1;
+	return retval;
 }
 
 
