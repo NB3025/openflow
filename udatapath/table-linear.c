@@ -54,13 +54,10 @@ struct sw_table_linear {
 static struct sw_flow *table_linear_lookup(struct sw_table *swt,
                                            const struct sw_flow_key *key)
 {
-				int i = 0;
     struct sw_table_linear *tl = (struct sw_table_linear *) swt;
     struct sw_flow *flow;
     LIST_FOR_EACH (flow, struct sw_flow, node, &tl->flows) {
-						i++;
         if (flow_matches_1wild(key, &flow->key)){
-								printf("%d\n",i);
             return flow;
 				}
     }
