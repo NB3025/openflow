@@ -114,7 +114,9 @@ chain_lookup(struct sw_chain *chain, const struct sw_flow_key *key, int emerg)
 		struct sw_table *tl = chain->tables[1];
 		struct sw_flow *flow = th->lookup(th,key);
 		th->n_lookup++;
+	  printf("start\n");	
 		if(flow){
+						printf("hash_find\n");
 						th->n_matched++;
 			return flow;
 		}
@@ -122,13 +124,17 @@ chain_lookup(struct sw_chain *chain, const struct sw_flow_key *key, int emerg)
 						tl->n_lookup++;
 			flow = tl->lookup(tl,key);
 			if(flow){
+							printf("linear_find %d\n",flow);
 							tl->n_matched++;
-				th->index_insert(th,key,flow);
+							th->index_insert(th,key,flow);
+							printf("end\n");
 				return flow;
 			}
+							printf("end\n");
 			return NULL;
 		}
 	}
+							printf("end\n");
     return NULL;
 }
 /* Inserts 'flow' into 'chain', replacing any duplicate flow.  Returns 0 if
