@@ -50,7 +50,7 @@ struct sw_table_hash {
     unsigned int bucket_mask; /* Number of buckets minus 1. */
     struct sw_flow **buckets;
 };
-
+static int tt[2048]={0,};
 static struct sw_flow **find_bucket(struct sw_table *swt,
                                     const struct sw_flow_key *key)
 {
@@ -58,26 +58,13 @@ static struct sw_flow **find_bucket(struct sw_table *swt,
     struct sw_table_hash *th = (struct sw_table_hash *) swt;
     unsigned int crc = crc32_calculate(&th->crc32, key, 
             offsetof(struct sw_flow_key, wildcards));
-		printf("---------crc------------- %d\n",crc);
-		printf("tp_src = %d\n",key->flow.tp_src);
-		printf("tp_src = %d\n",key->flow.tp_dst);
-		printf("wildcards = %d\n",key->wildcards);
-		printf("nw_src = %d\n",key->flow.nw_src);
-		printf("nw_dst = %d\n",key->flow.nw_dst);
-		printf("dl_vlan = %d\n",key->flow.dl_vlan);
-		printf("dl_type = %d\n",key->flow.dl_type);
-		printf("nw_tos = %d\n",key->flow.nw_tos);
-		printf("nw_proto = %d\n",key->flow.nw_proto);
-		printf("---------crc------------- %d\n",crc);
-    return &th->buckets[crc & th->bucket_mask];
+		return &th->buckets[crc & th->bucket_mask];
 }
 static struct sw_flow *table_hash_lookup(struct sw_table *swt,
                                          const struct sw_flow_key *key)
 {
-				printf("table_hash_lookup %d\n",key);
 	struct sw_flow *flow= *find_bucket(swt, key);//windows
 	if(flow){
-				printf("table_hash_lookup_flow %d\n",flow);
 		if(flow_matches_1wild(key,&flow->key)){
 						return flow;
 		}
@@ -113,12 +100,10 @@ static int table_hash_index_insert(struct sw_table *swt, const struct sw_flow_ke
 	struct sw_table_hash *th = (struct sw_table_hash *)swt;
 	struct sw_flow **bucket;
 	int retval;
-	printf("table_hash_index_insert %d // %d \n",flow,key);
 	bucket = find_bucket(swt, key);//&flow->key);
 	th->n_flows++;
 	*bucket = flow;
 	retval = 1;
-	printf("table_hash_index_insert_end %d // %d\n",*bucket, flow);
 	return retval;
 }
 
